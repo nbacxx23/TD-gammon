@@ -135,14 +135,14 @@ class Model(object):
     def evaluate(self, x):
         return self.sess.run(self.Value, feed_dict={ self.x: x })
 
-    def test(self, episodes=100, draw=False):
+    def test(self, episodes=100):
         agents = [agent('o', self), randomAgent('x')]
         winners = {}
         winners['o']=0
         winners['x']=0
         for episode in range(episodes):
             game = Gammon()
-            winner = game.startGame(agents, draw=draw)
+            winner = game.startGame(agents)
             winners[winner] += 1
 
             winners_total = winners['o']+winners['x']
@@ -160,7 +160,7 @@ class Model(object):
         agents = [agent('o', self), agent('x', self)]
 
         validation_interval = 50
-        episodes = 100
+        episodes = 10
 
         for episode in range(episodes):
             
