@@ -61,7 +61,7 @@ class Gammon:
             turn=0 if turn else 1
             STEP+=1
         #----code for debug-----comment later
-        print str(STEP) +' steps, Winnier: '+ self.winner
+        print str(STEP) +' steps, Winner: '+ self.winner
         return self.winner
     
     #next step change the player

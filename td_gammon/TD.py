@@ -4,6 +4,7 @@ import time
 import random
 import numpy as np
 import tensorflow as tf
+import os
 
 from Gammon import *
 from random_agent import *
@@ -55,8 +56,8 @@ class Model(object):
         self.Value = dense_layer(value_tmp, [layer_size_hidden, layer_size_output], tf.sigmoid, name='layer2')
 
         # watch the individual value predictions over time
-        tf.scalar_summary('Value_next', tf.reduce_sum(self.Value_next))
-        tf.scalar_summary('Value', tf.reduce_sum(self.Value))
+        tf.summary.scalar('Value_next', tf.reduce_sum(self.Value_next))
+        tf.summary.scalar('Value', tf.reduce_sum(self.Value))
 
         # delta = Value_next - Value
         delta_op = tf.reduce_sum(self.Value_next - self.Value, name='delta')
@@ -120,7 +121,7 @@ class Model(object):
         self.saver = tf.train.Saver(max_to_keep=1)
 
         # run variable initializers
-        self.sess.run(tf.initialize_all_variables())
+        self.sess.run(tf.global_variables_initializer())
 
         # after training a model, we can restore checkpoints here
         if restore:
@@ -135,7 +136,7 @@ class Model(object):
     def evaluate(self, x):
         return self.sess.run(self.Value, feed_dict={ self.x: x })
 
-    def test(self, episodes=100):
+    def test(self, episodes=1):
         agents = [agent('o', self), randomAgent('x')]
         winners = {}
         winners['o']=0
@@ -160,7 +161,7 @@ class Model(object):
         agents = [agent('o', self), agent('x', self)]
 
         validation_interval = 50
-        episodes = 10
+        episodes = 5000
 
         for episode in range(episodes):
             
@@ -177,12 +178,13 @@ class Model(object):
                 x_next = game.toFeatures(agents[turn].player)
                 Value_next = self.evaluate(x_next)
                 self.sess.run(self.train_op, feed_dict={ self.x: x, self.Value_next: Value_next })
+                #change the perspective each time
                 game.exchange()
                 x = game.toFeatures(agents[turn].player)
                 STEP += 1
             
             
-
+            #train both the loser and winner perspective
             _, global_step,  _ = self.sess.run([
                 self.train_op,
                 self.global_step,
@@ -200,5 +202,34 @@ class Model(object):
             print("Game %d/%d (Winner: %s) in %d turns" % (episode, episodes, game.winner, STEP))
             self.saver.save(self.sess, self.checkpoint_path + 'checkpoint', global_step=global_step)
         self.test()
+
+    #given the opening case and a set of rolls, give a recommendation of actions
+    def play(self):
+        game=Gammon()
+        agents = [agent('o', self), agent('x', self)]
+        
+        while True:
+            rolls = raw_input('Please enter a set of rolls for a recommendation: r1,r2 (enter stop if you want) ' )
+            if rolls == '':
+                rolls = None
+                break
+            if rolls=='stop':
+                return
+            try:
+                r1, r2 = rolls.split(",")
+                rolls=[int(r1),int(r2)]
+                Combs=game.allCombinations(game.players[0],rolls)
+                if Combs:
+                    print 'All possible moves are :'
+                    print Combs
+                    comb_best=agents[0].sel_best(Combs,game)
+                    print 'Best move : '
+                    print comb_best
+                else:
+                    break
+            except:
+                print 'Bad format enter e.g. "3,4"'
+
+
         
  

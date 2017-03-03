@@ -5,7 +5,7 @@ class randomAgent(object):
     
     def __init__(self,player):
         self.player=player
-        self.name='Random Agent'+player
+        self.name='Random Agent '+player
     
     
     def sel_best(self,combinations,gammon):

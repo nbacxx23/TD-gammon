@@ -6,6 +6,7 @@ import tensorflow as tf
 
 #-------first code for testing the gammon schelon
 #-----run python main.py to see simple game between two random players
+"""
 Game=Gammon()
 
 agents=[]
@@ -15,12 +16,12 @@ agents.append(agent1)
 agents.append(agent2)
 
 Game.startGame(agents)
-
+"""
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
 flags.DEFINE_boolean('test', False, 'If true, test against a random strategy.')
-flags.DEFINE_boolean('play', False, 'If true, play against a trained TD-Gammon strategy.')
+flags.DEFINE_boolean('play', False, 'If true, demand a recommendation of a trained TD-Gammon strategy.')
 flags.DEFINE_boolean('restore', False, 'If true, restore a checkpoint before training.')
 model_path = os.environ.get('MODEL_PATH', 'models/')
 checkpoint_path = os.environ.get('CHECKPOINT_PATH', 'checkpoints/')
@@ -39,7 +40,7 @@ if __name__ == '__main__':
     with sess.as_default(), graph.as_default():
         model = Model(sess, model_path,  checkpoint_path, restore=FLAGS.restore)
         if FLAGS.test:
-            model.test(episodes=1000)
+            model.test(episodes=100)
         elif FLAGS.play:
             model.play()
         else:
